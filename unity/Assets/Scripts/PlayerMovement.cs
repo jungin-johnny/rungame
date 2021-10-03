@@ -39,8 +39,7 @@ public class PlayerMovement : Agent
 
     public override void OnEpisodeBegin()
     {
-        if(GameManager.instance.isLearning == true)
-        {
+        if(GameManager.instance.isLearning == true){
             myMap.ResetMap();
             myMap.StartGame();
         }
@@ -51,21 +50,17 @@ public class PlayerMovement : Agent
         sensor.AddObservation(this.transform.localPosition.x);
         sensor.AddObservation(isJump);
 
-        for (int i = 0; i < 12; ++i)
-        {
+        for (int i = 0; i < 12; ++i){
             Vector3 newVec = Quaternion.Euler(0f, 0 + i * 30f, 0f) * new Vector3(0.0f, 0.0f, 1.0f);
             Debug.DrawRay(transform.position, newVec * 50.0f, Color.yellow);
             RaycastHit hit;
 
-            if (Physics.Raycast(transform.position, newVec, out hit, 50.0f))
-            {
+            if (Physics.Raycast(transform.position, newVec, out hit, 50.0f)){
                 sensor.AddObservation(hit.distance);
-                if (hit.transform.CompareTag("Enemy"))
-                {
+                if (hit.transform.CompareTag("Enemy")){
                     sensor.AddObservation(1.0f);
                 }
-                else if(hit.transform.CompareTag("Hole"))
-                {
+                else if(hit.transform.CompareTag("Hole")){
                     sensor.AddObservation(2.0f);
                 }
                 else if (hit.transform.CompareTag("BackBlock"))
@@ -177,16 +172,14 @@ public class PlayerMovement : Agent
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.instance.currentState == GameState.Playing)
-        {
-            if (isPlayer == true)
-            {
+        if (GameManager.instance.currentState == GameState.Playing ||
+            GameManager.instance.currentState == GameState.Testing){
+            if (isPlayer == true){
+
                 touchTime += Time.deltaTime;
 
-                if (joystick == null && GameManager.instance.isLearning == false)
-                {
+                if (joystick == null && GameManager.instance.isLearning == false){
                     joystick = GameManager.instance.map.joystick;
-
                     return;
                 }
 

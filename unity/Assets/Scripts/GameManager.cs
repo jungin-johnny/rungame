@@ -7,7 +7,8 @@ public enum GameState
 {
     MainMenu,
     Playing,
-    GameOver
+    GameOver,
+    Testing
 }
 
 public class GameManager : MonoBehaviour
@@ -49,16 +50,23 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if(isLearning == true)
+        if (currentState == GameState.Testing)
+        {
+            foreach (GameObject obj in inGameUI)
+                obj.SetActive(true);
+
+            return;
+        }
+
+        if (isLearning == true)
         {
             SetIngame();
         }
         else
         {
-            for (int i = 0; i < titleUI.Length; ++i)
-            {
-                titleUI[i].SetActive(true);
-            }
+            foreach (GameObject obj in titleUI)
+                obj.SetActive(true);
+
             map.ResetMap();
         }
     }
