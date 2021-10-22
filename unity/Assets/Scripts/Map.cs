@@ -4,121 +4,145 @@ using UnityEngine;
 
 public class Map : MonoBehaviour
 {
-    public Joystick joystick;
+    public GameObject cubePrefab;
 
-    //public PlayerMovement 
-    public PhysicMaterial physicsMaterial;
+    public GameObject playerPrefab;
+    public GameObject enemyPrefab;
 
-    public GameObject PlayerPrefabs;
-    public GameObject[] tile;
-    public GameObject[] lavaTile;
-    public GameObject enemy;
-    public GameObject hole;
-    public GameObject skull;
+    public GameObject[] testPrefab;
 
-    public Transform playerTransform;
-    public Transform cameraTransform;
-    public Transform backBlock;
+    private CubeAgent playerAgent;
+    private Transform playerTransform = null;
 
-    private float mapfront;
+    public GameObject[] mapPrefab;
+    private List<GameObject> mapList = new List<GameObject>();
 
-    // Start is called before the first frame update
+    private int mapLength;
+    private int mapRand;
+
     void Start()
     {
-        float temp = Time.time * 100f;
-        Random.InitState((int)temp);
-
-        //ResetMap();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(GameManager.instance.currentState == GameState.Playing)
+        if(playerTransform != null && GameManager.instance.currentState == EGameState.Playing &&
+            playerTransform.position.z > (mapLength - 1) * 46.0f + 18.0f)
         {
-            backBlock.Translate(0.0f, 0.0f, Time.deltaTime * 2.2f / 0.8f);
+            MakeMap();
+        }
+    }
+    public void ChangeState(EGameState gameState)
+    {
+        switch (gameState)
+        {
+            case EGameState.Testing:
+                {
+                    //MakePlayer(true, new Vector3(0.0f, 1.0f, 0.0f));
+                    //
+                        MakePlayer(false, new Vector3(0.0f, 1.0f, 0.0f));
+                }
+                break;
 
-            if (playerTransform.position.z > mapfront)
-            {
-                MakeLine(mapfront + 40.0f, true);
-                mapfront += 2.2f;
-            }
+            case EGameState.Learning:
+                {
+                    for (int i = 0; i < 20; ++i)
+                        MakePlayer(false, new Vector3(0.0f, 1.0f, 0.0f));
+                }
+                break;
 
-            if(playerTransform.position.z - backBlock.position.z > 20.0f)
-            {
-                backBlock.localPosition = new Vector3(0.0f, 0.0f, playerTransform.position.z - 20.0f);
-            }
+            case EGameState.Playing:
+                {
+                    MakeMap();
+                    MakePlayer(true, new Vector3(0.0f, 1.0f, 0.0f));
+                }
+                break;
+
+            default:
+                Debug.Assert(false, "unknown game state");
+                break;
         }
     }
 
-    private void MakeTile(float x, float y, float z)
+    private void MakePlayer(bool isPlayer, Vector3 position)
     {
-        GameObject obj = Instantiate(tile[Random.Range(0, tile.Length)], transform);
-        obj.tag = "Tile";
-        obj.transform.localPosition = new Vector3(x, y, z);
-        obj.transform.localScale = new Vector3(2.0f, 2.0f, 2.0f);
-        BoxCollider boxCollider = obj.AddComponent<BoxCollider>();
-        Rigidbody rigidbody = obj.AddComponent<Rigidbody>();
-        rigidbody.isKinematic = true;
-    }
-
-    public void MakeLine(float zPos, bool makeEnemy)
-    {
-        for (int j = -2; j < 3; ++j)
+        if (isPlayer == true)
         {
-            if (makeEnemy == true)
+            GameObject obj = Instantiate(playerPrefab, transform);//, position, Quaternion.identity
+            playerAgent = obj.GetComponent<CubeAgent>();
+            playerAgent.InitializeAgent(isPlayer, this);
+
+            playerTransform = obj.transform;
+        }
+        else
+        {
+            if (GameManager.instance.currentState == EGameState.Testing)
             {
-                float randNum = Random.Range(0.0f, 1.0f);
-                if (randNum < 0.05f)
+                for (int i = 0; i < 30; ++i)
                 {
-                    GameObject enemy_obj = Instantiate(enemy, transform);
-                    enemy_obj.transform.localPosition = new Vector3(2.2f * j, -0.5f, zPos);
-                    MakeTile(2.2f * j, -1.6f, zPos);
-                }
-                else if(randNum < 0.15f)
-                {
-                    GameObject enemy_obj = Instantiate(hole, transform);
-                    enemy_obj.transform.localPosition = new Vector3(2.2f * j, -0.5f, zPos);
-                }
-                else
-                {
-                    MakeTile(2.2f * j, -1.6f, zPos);
+                    GameObject obj = Instantiate(testPrefab[i/10], transform);//, position, Quaternion.identity
+                    obj.transform.position = position;
+                    playerAgent = obj.GetComponent<CubeAgent>();
+                    playerAgent.InitializeAgent(isPlayer, this);
                 }
             }
             else
             {
-                MakeTile(2.2f * j, -1.6f, zPos);
+                GameObject obj = Instantiate(enemyPrefab, transform);//, position, Quaternion.identity
+                obj.transform.position = position;
+                playerAgent = obj.GetComponent<CubeAgent>();
+                playerAgent.InitializeAgent(isPlayer, this);
             }
         }
+    }
 
-        if(makeEnemy == true && (Random.Range(0.0f, 1.0f) < 0.1f))
+
+    private void MakeMap()
+    {
+        int ranmap = Random.Range(0, mapPrefab.Length);
+        //int ranmap = mapRand % mapPrefab.Length;
+
+        for (int i = 0; i < 10; ++i)
         {
-            //float spd = Random.Range(1.0f, 3.0f);
-            float spd = (Random.Range(0, 2)==1) ? -2.5f : 2.5f;
-
-            for (int i = 0; i < 20; ++i)
-            {
-                GameObject skull_obj = Instantiate(skull, transform);
-                skull_obj.transform.localPosition = new Vector3(-60.0f + 6f * i, 0.1f, zPos);
-                skull_obj.GetComponent<Skull>().speed = 2.5f;
-                Destroy(skull_obj, 20.0f);
-            }
+            if(ranmap == 4)
+                MakePlayer(false, new Vector3(Random.Range(-5.0f, 5.0f), 20.0f, mapLength * 46.0f + Random.Range(0.0f, 46.0f)));
+            else
+                MakePlayer(false, new Vector3(Random.Range(-5.0f, 5.0f), 3.0f, mapLength * 46.0f + Random.Range(0.0f, 46.0f)));
         }
 
-        for (int j = -8; j < 8; ++j)
-        {
-            GameObject obj = Instantiate(lavaTile[Random.Range(0, lavaTile.Length)], transform);
+        for (int i = 0; i < 4; ++i)
+            MakePlayer(false, new Vector3(Random.Range(-3.0f, 3.0f), 2.0f, mapLength * 46.0f + Random.Range(-1.0f, 1.0f)));
 
-            obj.tag = "Lava";
-            obj.transform.localPosition = new Vector3(2.2f * j, -6f, zPos);
-            obj.transform.localScale = new Vector3(2.05f, 2.05f, 2.05f);
-            Rigidbody rigidbody = obj.AddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
-        }
+        GameObject obj = Instantiate(mapPrefab[ranmap], transform);
+        obj.transform.localPosition = new Vector3(0.0f, 0.0f, mapLength * 46.0f);
+        mapList.Add(obj);
+
+        mapLength++;
+    }
+
+    private void MakeTile(float x, float y, float z)
+    {
+    }
+
+    public void MakeLine(float zPos, bool makeEnemy)
+    {
     }
 
     public void ResetMap()
     {
+        mapRand++;
+
+        foreach (GameObject obj in mapList)
+        {
+            Destroy(obj);
+        }
+
+        mapList.Clear();
+
+        mapLength = 0;
+        MakeMap();
+        /*
         GameManager.instance.score = 0;
         backBlock.localPosition = new Vector3(0.0f, 0.0f, 2.2f * -10);
         foreach (Transform child in transform)
@@ -139,11 +163,12 @@ public class Map : MonoBehaviour
         for (int i = -9; i < 15; ++i)
         {
             MakeLine(2.2f * i, false);
-        }
+        }*/
     }
 
     public void StartGame()
     {
+        /*
         if (GameManager.instance.isLearning == true)
         {
             if(playerTransform == null)
@@ -172,6 +197,6 @@ public class Map : MonoBehaviour
 
             playerTransform.position = transform.position;
             playerTransform.localEulerAngles = Vector3.zero;
-        }
+        }*/
     }
 }

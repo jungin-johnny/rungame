@@ -3,44 +3,50 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum GameState
+public enum EGameState
 {
     MainMenu,
     Playing,
     GameOver,
-    Testing
+    Testing,
+    Learning
 }
-
 public class GameManager : MonoBehaviour
 {
-    public GameState currentState = GameState.MainMenu;
-
-    public GameObject[] inGameUI;
-    public GameObject[] titleUI;
-    public GameObject[] gameOverUI;
-    public Text scoreText;
-
-    public Map map;
-    public Map[] learningMaps;
+    public readonly int LEARNING_STAGE = 10;
+    public float recentEscapeTime { get; private set; } = 0.0f;
 
     public static GameManager instance = null;
-    public Transform[] cubesTransform;
 
-    private int backTouch = 0;
-    public float score = 0;
+    public EGameState currentState;
 
-    public bool isLearning;
+    public CameraScript mainCam;
+
+    public GameObject mapPrefab;
+    public GameObject uiPrefab;
+
+    public List<Map> mapList = new List<Map>();
+    private UIManager uiManager = null;
+
+    public Transform laserTrans;
+
+    public int[] hittedNum = new int[3];
+    public int[] SSNum = new int[3];
+    public int[] PPNum = new int[3];
+
+    public int[] trynum = new int[6];
+    public int[] successnum = new int[6];
 
     private void Awake()
     {
-        if(instance == null)
+        if (instance == null)
         {
             instance = this;
             DontDestroyOnLoad(instance);
         }
         else
         {
-            if(instance != this)
+            if (instance != this)
             {
                 Destroy(this.gameObject);
             }
@@ -50,105 +56,57 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (currentState == GameState.Testing)
-        {
-            foreach (GameObject obj in inGameUI)
-                obj.SetActive(true);
+        GameObject ui = Instantiate(uiPrefab);
+        uiManager = ui.GetComponent<UIManager>();
 
-            return;
+        int numStage = 1;
+        /*
+        if (currentState == EGameState.Learning)
+        {
+            numStage = LEARNING_STAGE;
+        }*/
+
+        for (int i = 0; i < numStage; ++i)
+        {
+            GameObject mapObj = Instantiate(mapPrefab);
+            mapList.Add(mapObj.GetComponent<Map>());
         }
 
-        if (isLearning == true)
-        {
-            SetIngame();
-        }
-        else
-        {
-            foreach (GameObject obj in titleUI)
-                obj.SetActive(true);
-
-            map.ResetMap();
-        }
+        SetGameState(currentState);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isLearning == false)
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (recentEscapeTime > 0.0f)
             {
-                backTouch++;
-                if (IsInvoking("DoubleBackTouch") == false)
-                {
-                    Invoke("DoubleBackTouch", 1.0f);
-                }
-            }
-            else if (backTouch == 2)
-            {
-                CancelInvoke("DoubleBackTouch");
                 Application.Quit();
             }
-        }
-
-        switch(currentState)
-        {
-            case GameState.MainMenu:
-                break;
-
-            case GameState.Playing:
-                score += (Time.deltaTime * 2.0f);
-                scoreText.text = "SCORE : " + ((int)score).ToString();
-                break;
-
-            case GameState.GameOver:
-                break;
-        }
-    }
-
-    public void SetIngame()
-    {
-        score = 0;
-
-        for (int i = 0; i < titleUI.Length; ++i)
-            titleUI[i].SetActive(false);
-
-        for (int i = 0; i < gameOverUI.Length; ++i)
-            gameOverUI[i].SetActive(false);
-
-        for (int i = 0; i < inGameUI.Length; ++i)
-            inGameUI[i].SetActive(true);
-
-        //if (currentState == GameState.GameOver)
-        if (isLearning == true)
-        {
-            foreach (Map learnMap in learningMaps)
+            else
             {
-                learnMap.ResetMap();
-                learnMap.StartGame();
+                recentEscapeTime = 0.5f;
             }
         }
-        else
+
+        if (recentEscapeTime > 0.0f)
         {
-            map.ResetMap();
-            map.StartGame();
+            recentEscapeTime -= Time.deltaTime;
         }
-        currentState = GameState.Playing;
+    }
+    public void SetGameState(EGameState gameState)
+    {
+        uiManager.ChangeState(currentState);
+
+        foreach (Map map in mapList)
+        {
+            map.ChangeState(currentState);
+        }
     }
 
-    public void SetGameOver()
+    public Joystick GetJoystick()
     {
-        for (int i = 0; i < inGameUI.Length; ++i)
-            inGameUI[i].SetActive(false);
-
-        for (int i = 0; i < gameOverUI.Length; ++i)
-            gameOverUI[i].SetActive(true);
-
-        currentState = GameState.GameOver;
-    }
-
-    void DoubleBackTouch()
-    {
-        backTouch = 0;
+        return uiManager.joystick;
     }
 }

@@ -39,14 +39,16 @@ public class PlayerMovement : Agent
 
     public override void OnEpisodeBegin()
     {
+        /*
         if(GameManager.instance.isLearning == true){
             myMap.ResetMap();
             myMap.StartGame();
-        }
+        }*/
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        /*
         sensor.AddObservation(this.transform.localPosition.x);
         sensor.AddObservation(isJump);
 
@@ -77,11 +79,12 @@ public class PlayerMovement : Agent
                 sensor.AddObservation(50.0f);
                 sensor.AddObservation(0.0f);
             }
-        }
+        }*/
     }
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
+        /*
         if (GameManager.instance.currentState == GameState.Playing)
         {
             if (isPlayer == true)
@@ -109,7 +112,7 @@ public class PlayerMovement : Agent
                     }
                 }
             }
-        }
+        }*/
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
@@ -125,6 +128,7 @@ public class PlayerMovement : Agent
 
     private void OnCollisionEnter(Collision collision)
     {
+        /*
         if(collision.gameObject.CompareTag("Cube"))
         {
             //Vector3 col_velocity = collision.rigidbody.velocity;
@@ -147,11 +151,12 @@ public class PlayerMovement : Agent
                 isPlayer = false;
                 Destroy(gameObject, 5.0f);
             }
-        }
+        }*/
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        /*
         if (other.gameObject.CompareTag("Enemy"))
         {
             if (GameManager.instance.isLearning == true)
@@ -165,13 +170,14 @@ public class PlayerMovement : Agent
                 isPlayer = false;
                 Destroy(gameObject, 5.0f);
             }
-        }
+        }*/
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        /*
         if (GameManager.instance.currentState == GameState.Playing ||
             GameManager.instance.currentState == GameState.Testing){
             if (isPlayer == true){
@@ -217,7 +223,7 @@ public class PlayerMovement : Agent
                     isJump = 0.0f;
                 }
             }
-        }
+        }*/
     }
 
     private void Jump()
@@ -232,7 +238,7 @@ public class PlayerMovement : Agent
     {
         //resumeTime -= Time.deltaTime;
         
-        if (GameManager.instance.currentState == GameState.Playing)
+        if (GameManager.instance.currentState == EGameState.Playing)
         {
             
         }

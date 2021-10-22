@@ -13,12 +13,13 @@ public class UnderBlock : MonoBehaviour
     // Update is called once per frame
     void OnTriggerEnter(Collider col)
     {
+        /*
         if (GameManager.instance.currentState == GameState.Playing)
         {
             if (col.CompareTag("Tile") == true)
             {
                 Destroy(col.gameObject);
             }
-        }
+        }*/
     }
 }

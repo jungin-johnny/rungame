@@ -5,11 +5,14 @@ TagManager:
   serializedVersion: 2
   tags:
   - Cube
-  - Tile
   - Lava
   - Enemy
   - Hole
   - BackBlock
+  - Ground
+  - Arrival
+  - Out
+  - Laser
   layers:
   - Default
   - TransparentFX
@@ -17,12 +20,12 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Laser
+  - Trigger
+  - Cube
+  - Obstacle
+  - Ground
+  - BackGroundImage
   - 
   - 
   - 

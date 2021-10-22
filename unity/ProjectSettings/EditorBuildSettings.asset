@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/InGameScene 2.unity
+    guid: af504fca744bb8d4090770318513d61a
   m_configObjects:
     com.unity.ml-agents.settings: {fileID: 11400000, guid: 838ba2c6c2451bb4daaad9620728ca85, type: 2}
